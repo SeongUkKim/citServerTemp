@@ -7,7 +7,7 @@
 		<property name="host" value="smtp.gmail.com" />
 		<property name="port" value="587" />
 		<property name="username" value="td1118@yonsei.ac.kr" />
-		<property name="password" value="djha pdkb awuo mawa" />
+		<property name="password" value="password" />
 
 
 		<!-- email 요청시는 SMTP -->
