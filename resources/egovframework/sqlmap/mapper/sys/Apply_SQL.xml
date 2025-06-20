@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="apply">
+	
+	<select id="selectCampaignInfo" parameterType="EgovMap" resultType="EgovMap">
+		SELECT * FROM campaign
+		WHERE c_id = #{campaignId}::INTEGER
+	</select>
+	
+	<select id="selectApprovedStudentCount" parameterType="EgovMap" resultType="Integer">
+		SELECT COUNT(*) FROM campaign_applicant
+		WHERE c_id = #{campaignId}::INTEGER AND status = '2'
+	</select>
+	
+	<select id="selectApprovedCampaignList" parameterType="EgovMap" resultType="EgovMap">
+		SELECT b.status, b.id, b.apply_date ,c.u_id, c.u_hp, c.u_nm, c.u_addr
+		FROM campaign_applicant b
+		INNER JOIN member_info c
+		ON b.id = c.id
+		WHERE b.c_id = #{campaignId}::INTEGER
+		ORDER BY b.apply_date
+	</select>
+	
+	
+	<update id="updateApplyStatus" parameterType="EgovMap">
+		UPDATE campaign_applicant
+		SET status = #{applyStatus}
+		WHERE c_id = #{campaignId}::INTEGER AND id = #{uId}::INTEGER
+	</update>
+	
+	<update id="updateStudentBalancePlus" parameterType="EgovMap">
+		UPDATE member_info
+		SET u_balance = (SELECT u_balance FROM member_info WHERE id = #{uId}::INTEGER) + #{campaignEstimate}::INTEGER
+		WHERE id = #{uId}::INTEGER
+	</update>
+	
+	
+	<update id="updateStudentConfirm" parameterType="EgovMap">
+		UPDATE campaign_applicant
+		SET status = '3'
+		WHERE status = '2' AND c_id = #{campaignId}::INTEGER
+	</update>
+	
+	<update id="updateRestOfStudent">
+		UPDATE campaign_applicant
+		SET status = '6'
+		WHERE status = '1' AND c_id = #{campaignId}::INTEGER
+	</update>
+	
+	<update id ="updateCampaign" parameterType="EgovMap">
+		UPDATE campaign
+		SET c_st = '4'
+		WHERE c_id = #{campaignId}::INTEGER
+	</update>
+	
+	<!-- <update id="updateTeacherBalancePlus" parameterType="EgovMap">
+		UPDATE member_info
+		SET u_balance = (SELECT u_balance FROM member_info WHERE u_id = #{userId}) + #{campaignEstimate}::INTEGER
+		WHERE u_id = #{userId}
+	</update>
+	
+	<update id="updateStudentBalanceMinus" parameterType="EgovMap">
+		UPDATE member_info
+		SET u_balance = (SELECT u_balance FROM member_info WHERE id = #{uId}::INTEGER) - #{campaignEstimate}::INTEGER
+		WHERE id = #{uId}::INTEGER
+	</update>
+	
+	<update id="updateTeacherBalanceMinus" parameterType="EgovMap">
+		UPDATE member_info
+		SET u_balance = (SELECT u_balance FROM member_info WHERE u_id = #{userId}) - #{campaignEstimate}::INTEGER
+		WHERE u_id = #{userId}
+	</update> -->
+	
+</mapper>

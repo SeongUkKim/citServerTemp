@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:security="http://www.springframework.org/schema/security"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-4.2.xsd">
+	
+	<security:http auto-config='true' use-expressions="true">
+	
+		<security:access-denied-handler ref="customAccessDeniedHandler"/>
+		
+		<!-- 
+		******************************************************************************************************************************
+		로그아웃 후 이동 경로 지정
+		invalidate-session		로그아웃을 했을 때, 세션이 무효화 될 것인지 설정
+		<logout logout-success-url="/closeSession.do" logout-url="/logout.do" invalidate-session="true" />
+		<logout logout-url="/logout.do" invalidate-session="true" success-handler-ref="customLogoutHandler" />
+		******************************************************************************************************************************
+		 -->
+		<security:logout logout-url="/logout.do"
+						 logout-success-url="/index.do"
+						 invalidate-session="true"
+						 delete-cookies="JSESSIONID"
+						 />
+	
+		<security:csrf disabled="false"/>
+		
+		
+        <security:intercept-url pattern="/index.do" access="permitAll" />
+        <security:intercept-url pattern="/member/**" access="permitAll" />
+		<security:intercept-url pattern="/excl/**" access="permitAll" />
+        <security:intercept-url pattern="/main.do" access="hasAnyRole('ROLE_BASIC','ROLE_ADMIN', 'ROLE_AUTHIRIZED')" /> 
+        <security:intercept-url pattern="/main/**" access="hasAnyRole('ROLE_BASIC','ROLE_ADMIN', 'ROLE_AUTHIRIZED')" />
+        
+        
+        <security:form-login login-page="/index.do"
+					username-parameter="id"
+					password-parameter="password"
+					login-processing-url="/loginProcess"
+					default-target-url="/loginSuccess.do"
+					authentication-failure-handler-ref="customAuthenticationFailureHandler"
+					/>
+					
+		<!-- 
+		******************************************************************************************************************************
+		session-management				중복 로그인 방지 설정
+		invalid-session-url				세션이 끊겼을 때 이동 할 페이지
+		session-fixation-protection		세션 공격 방어: 공격자가 임의의 세션 ID를 URL에 붙어 글을 작성해 두고 임의의사용자 혹은 관리자가 그 링크를 클릭하도록 유도 후 그 링크를
+										클릭하게 되면 세션 아이디가 변경 되므로 로그아웃이 된다. 이후 사용자 혹은 관리자가 이 공격을 인지 하지 못하고 다시 로그인을 하게 되면
+										공격자가 이 세션 ID를 획득하여 사용자 혹은 관리자 권한을 획득
+										세션 공격을 방어하는 기본적인 방법: 로그인시에 세션 아이디를 변경
+										(Spring Security 사용시 기본적으로 방어하도록 설정 되어 있음)
+										* migrateSession	: 새 session 생성 후 기존의 session의 값은 새 session에 복사(기본값)
+															(servlets 3.1이상: changeSessionId)
+										* none				: 기존 session 유지
+										* newSession		: 새 session 생성 session은 복사하지 않음
+		max-sessions					최대 허용 가능 중복 세션 수
+		expired-url						중복 로그인이 일어났을 경우 이동 할 페이지
+		error-if-maximum-exceeded		true: 먼저 로그인 한 세션 유지, false or default 나중 로그인 한 세션 우선
+		
+		******************************************************************************************************************************
+		 -->
+		
+		<security:session-management invalid-session-url="/invalid" session-fixation-protection="migrateSession">
+			<security:concurrency-control max-sessions="1" expired-url="/expired" error-if-maximum-exceeded="false"/>
+		</security:session-management>
+					        
+    </security:http>
+    
+    <security:authentication-manager alias="authenticationManager">
+		<security:authentication-provider ref="customAuthenticationProvider">
+		</security:authentication-provider>
+	</security:authentication-manager>
+    
+    <bean id="customAccessDeniedHandler" class="egovframework.sys.sec.handler.CitAccessDeniedHandler"/>
+	<bean id="customAuthenticationProvider" class="egovframework.sys.sec.handler.CitAuthenticationProvider"/>
+	<bean id="customAuthenticationFailureHandler" class="egovframework.sys.sec.handler.CitAuthenticationFailureHandler"/>
+
+</beans>

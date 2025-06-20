@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="Member">
+
+	<select id="idConfirm" parameterType="EgovMap" resultType="Integer">
+ 		SELECT COUNT(*) FROM member_info WHERE u_crpt=#{uId}
+ 		<if test="uPw!=null and !uPw.equals('')">
+ 			AND u_pw=#{uPw}
+ 		</if>
+ 	</select>
+ 	
+ 	<select id="pwchkConfirm" parameterType="EgovMap" resultType="Integer">
+ 		SELECT COUNT(*) FROM member_info WHERE u_crpt=#{uId} and u_nm=#{uNm}
+ 	</select>
+ 	
+ 	<select id="selectMemberLogin" parameterType="EgovMap" resultType="egovframework.sys.sec.user.SUserAccessVO">
+		SELECT 
+			u_id as user_id,
+			u_pw as user_pw,
+			u_nm as user_nm,
+			u_hp as user_hp,
+			c_nm as user_cp,
+			c_ctgr_no as user_cp_no,
+			u_auth as authority
+		 FROM member_info WHERE u_crpt=#{uId}
+	</select>
+	
+	<insert id="insertMemberJoin" parameterType="EgovMap" >
+		<![CDATA[
+			insert into member_info (
+			u_id,
+			u_crpt,
+			u_nm,
+			u_hp,
+			c_nm,
+			c_ctgr_no,
+			c_dt,
+			id_gen_agr,
+			u_pw,
+			u_auth,
+			u_rw_pw,
+			lon_x,
+			lat_y,
+			u_balance,
+			u_addr)
+			values (
+			#{uId},
+			#{uCrpt},
+			#{uNm},
+			#{uHp},
+			'',
+			0,
+			now()::date,
+			#{idGenAgr},
+			#{uPw},
+			'B',
+			'N',
+			#{uLonX}::DOUBLE PRECISION,
+			#{uLatY}::DOUBLE PRECISION,
+			0,
+			#{uAddr}
+			)
+		]]>
+	</insert>
+ 	
+	<select id="selectMemberNo" parameterType="EgovMap" resultType="EgovMap">
+ 		SELECT id, u_id 
+ 		FROM member_info 
+ 		WHERE u_crpt = #{uId} 
+ 		AND u_nm = #{uNm}
+ 	</select>
+ 	
+ 	<update id="updateMemberRwPw">
+		UPDATE member_info
+		SET u_rw_pw = 'Y'
+		WHERE u_crpt=#{uId}
+	</update>
+ 	
+ 	<select id="selectMemberEmail" parameterType="EgovMap" resultType="String">
+ 		SELECT u_id 
+ 		FROM member_info 
+ 		WHERE id = #{seq}::INTEGER
+ 	</select>
+ 	
+ 	<select id="selectBeforePassword" parameterType="EgovMap" resultType="String">
+ 		SELECT u_pw
+ 		FROM member_info
+ 		WHERE u_crpt = #{uId}
+ 	</select>
+ 	
+	
+	<update id="updateMemberpwChange">
+		UPDATE member_info
+		SET u_pw = #{uPw}
+		WHERE u_crpt = #{uId}
+	</update>
+	
+	<select id="passwordHistory" parameterType="EgovMap" resultType="Integer">
+		SELECT COUNT(*) 
+ 		FROM member_info 
+ 		WHERE u_crpt = #{uId} 
+ 		AND u_pw = #{uPw}
+	</select>
+	
+	<update id="updateMemberModify" parameterType="EgovMap">
+		UPDATE member_info
+		SET u_pw = #{uPw},
+			c_nm = #{cNm},
+			c_ctgr_no = #{cCtgrNo}::INTEGER,
+			u_addr = #{uAddr},
+			u_hp = #{uHp},
+			lon_x = #{uLonX}::DOUBLE PRECISION,
+			lat_y = #{uLatY}::DOUBLE PRECISION
+		WHERE u_crpt = #{uId}
+	</update>
+	
+	<insert id="insertAccessLog" parameterType="EgovMap">
+		<![CDATA[
+			INSERT INTO access_log 
+			VALUES(
+			#{uid},
+			#{accessurl},
+			#{accesstime}::date
+			)
+		]]>
+	</insert>
+
+	<select id="selectMemberCredit" parameterType="EgovMap" resultType="EgovMap">
+		SELECT u_id, u_nm, u_hp, u_balance FROM member_info
+		WHERE u_id = #{userId}
+	</select>
+	
+	<update id="updateCreditBalance" parameterType="EgovMap">
+		UPDATE member_info
+		SET u_balance = ${newCredit}
+		WHERE id = ${id}
+	</update>
+	
+	<insert id="insertCreditHistory" parameterType="EgovMap">
+		INSERT INTO member_credit
+		(u_id, imp_uid, merchant_uid, sort, amount, p_dt)
+		VALUES
+		(#{uId}, #{impUid}, #{merchantUid}, ${sort}, ${amount}, #{pDt})
+	</insert>
+	
+	<select id="selectCreditHistory" parameterType="EgovMap" resultType="EgovMap">
+		select * from member_credit
+		where u_id = #{uId}
+	</select>
+	
+	<insert id="insertMentorInfo" parameterType="EgovMap">
+		INSERT INTO mentor_apply
+			(u_id, process, job, link, information, apply_date, c_ctgr_no, id)
+		VALUES
+			(#{uId}, #{process}, #{job}, #{link}, #{information}, #{regiDate}, ${jobCategory}, ${id})
+	</insert>
+	
+	<insert id="insertMentorFile" parameterType="java.util.List">
+		INSERT INTO mentor_file
+			(u_id, file_org_name, file_svr_name, file_size, id)
+		VALUES
+		<foreach collection="list" item="item" separator=",">
+			(#{item.uId}, #{item.file_org_name}, #{item.file_svr_name}, ${item.file_size}, ${item.id})
+		</foreach>
+	</insert>
+
+	<insert id="insertMentorCategory" parameterType="java.util.List">
+		INSERT INTO mentor_category
+			(u_id, category, id)
+		VALUES
+		<foreach collection="list" item="item" separator=",">
+			(#{item.uId}, #{item.category}, ${item.id})
+		</foreach>
+	</insert>
+	
+	<update id="updateMentorStatus" parameterType="EgovMap">
+		UPDATE member_info
+		SET u_state = #{uStatus}
+		WHERE u_id = #{uId}
+	</update>
+	
+	<select id="selectUserId" parameterType="EgovMap" resultType="EgovMap">
+		SELECT id, u_balance FROM member_info t1
+		WHERE t1.u_id = #{uId}
+	</select>
+	
+	<select id="selectMentorId" parameterType="EgovMap" resultType="EgovMap">
+SELECT id FROM member_info t1
+		WHERE t1.u_id = #{mentorEmail}
+</select>
+	
+	<insert id="insertReview" parameterType="EgovMap">
+		INSERT INTO mentor_review
+			(id, mentor_nm, c_id, c_nm, u_id, u_nm, star, comment, date)
+		VALUES
+			(${mentorPkId}, #{mentorName}, ${cId}, #{cNm}, #{uId}, #{uNm}, ${starRate}, #{comment}, #{date})
+	</insert>
+	
+	<select id="selectReviewCheck" parameterType="EgovMap" resultType="EgovMap">
+		SELECT EXISTS(
+			SELECT 1 FROM mentor_review WHERE c_id = ${cId} AND u_id = #{uId}
+			);
+	</select>
+	
+	<select id="selectUserReview" parameterType="EgovMap" resultType="EgovMap">
+		select * from mentor_review
+		where c_id = ${cId} and u_id = #{uId}
+	</select>
+	
+	<select id="selectReviewExistCheck" parameterType="EgovMap" resultType="EgovMap">
+		SELECT EXISTS(
+				SELECT 1 FROM mentor_review WHERE id = ${mentorId}
+				);
+	</select>
+	
+	<select id="selectReviewAverage" parameterType="EgovMap" resultType="EgovMap">
+		select round(avg(star), 1) from mentor_review
+		where id = ${mentorId}
+	</select>
+	
+	<select id="selectReviewList" parameterType="EgovMap" resultType="EgovMap">
+		select * from mentor_review
+		where id = ${mentorPkId}
+	</select>
+</mapper>

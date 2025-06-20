@@ -1,0 +1,436 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="Admin">
+
+	<select id="selectAccessLogList" parameterType="EgovMap" resultType="EgovMap">
+ 			SELECT  a.u_id, a.access_url,a.access_time,a.num
+				FROM (	SELECT b.u_id, b.access_url, b.access_time, (ROW_NUMBER() OVER()) AS num
+					FROM (SELECT * FROM access_log ORDER BY access_time DESC) b
+					) a
+				WHERE a.num between #{start} and #{end}
+ 	</select>
+ 	
+ 	<select id="selectCountAccessLogList" parameterType="EgovMap" resultType="int">
+ 		SELECT count(*) FROM access_log
+ 	</select>
+ 	
+ 	<select id="selectMemberInfoList" parameterType="EgovMap" resultType="EgovMap">
+ 		SELECT u_id, u_nm, u_hp, c_nm, c_dt, u_auth FROM member_info
+ 	</select>
+ 	
+ 	<select id="selectCalculList" parameterType="EgovMap" resultType="EgovMap">
+ 		SELECT * FROM co2_calculation
+ 	</select>
+	
+	<select id="selectCampaignBoard" parameterType="EgovMap" resultType="EgovMap">
+		SELECT * FROM campaign a LEFT JOIN campaign_img b 
+		ON a.c_id = b.c_id
+		WHERE a.c_id = ${cId}
+	</select>
+	
+	<select id="selectCampaignFile" parameterType="EgovMap" resultType="EgovMap">
+		SELECT  * FROM campaign_file 
+		WHERE c_id = ${cId}
+	</select>
+	
+	<select id="selectCampaignCalender" parameterType="EgovMap" resultType="EgovMap">
+		SELECT  * FROM campaign_calender 
+		WHERE c_id = ${cId}
+	</select>
+	
+	<select id="selectCampaignCategory" parameterType="EgovMap" resultType="EgovMap">
+		SELECT  * FROM campaign_category
+		WHERE c_id = ${cId}
+	</select>
+	
+	<select id="selectCampaignByCid" parameterType="EgovMap" resultType="EgovMap">
+		SELECT * from campaign
+		WHERE c_id = ${cId}
+	</select>
+	
+	<select id="selectCampaignImg" parameterType="EgovMap" resultType="EgovMap">
+		SELECT * from campaign_img
+		WHERE c_id = ${cId}
+	</select>
+	
+	<select id="selectUserInfoByCid" parameterType="EgovMap" resultType="EgovMap">
+		SELECT * from member_info
+		WHERE c_id = ${cId}
+	</select>
+	<!-- 캠페인 승인 -->
+	<update id="UpdateApproveCampaign" parameterType="EgovMap">
+		UPDATE campaign
+		SET c_st = '2'
+		WHERE c_id = ${cId}
+	</update>
+
+	<!-- 캠페인 거절-->
+	<update id="UpdateRefuseCampaign" parameterType="EgovMap">
+		UPDATE campaign
+		SET c_st = '0'
+		WHERE c_id = ${cId}
+	</update>
+	
+	<!-- 승인된 캠페인 -->
+	<select id="selectCampainApproved" parameterType="EgovMap" resultType="EgovMap">
+		<choose>
+ 			<when test="searchTitle=='캠페인 이름'">	
+				SELECT  a.c_id, a.u_id, a.c_dt, a.c_nm, a.c_img, a.c_mbr, a.c_inter, a.lon_x, a.lat_y, a.svc_nm, a.svc_link, a.st_date, a.ed_date, a.estimate, a.c_exp, a.c_st
+							,a.num
+				FROM (	SELECT b.c_id, b.u_id, b.c_dt, b.c_nm, b.c_img, b.c_mbr, b.c_inter, b.lon_x, b.lat_y, b.svc_nm, b.svc_link, b.st_date, b.ed_date, b.estimate, b.c_exp, b.c_st, (ROW_NUMBER() OVER()) AS num
+							FROM (
+								  SELECT * FROM ( SELECT * FROM campaign WHERE c_st = '2' AND c_nm LIKE '%${searchCont}%') as c ORDER BY c_dt DESC
+								  ) b
+					  ) a
+				WHERE a.num between #{start} and #{end}
+			</when>
+			<when test="searchTitle=='등록자'">	
+				SELECT  a.c_id, a.u_id, a.c_dt, a.c_nm, a.c_img, a.c_mbr, a.c_inter, a.lon_x, a.lat_y, a.svc_nm, a.svc_link, a.st_date, a.ed_date, a.estimate, a.c_exp, a.c_st
+							,a.num
+				FROM (	SELECT b.c_id, b.u_id, b.c_dt, b.c_nm, b.c_img, b.c_mbr, b.c_inter, b.lon_x, b.lat_y, b.svc_nm, b.svc_link, b.st_date, b.ed_date, b.estimate, b.c_exp, b.c_st, (ROW_NUMBER() OVER()) AS num
+							FROM (
+								  SELECT * FROM ( SELECT * FROM campaign WHERE c_st = '2' AND u_id LIKE '%${searchCont}%') as c ORDER BY c_dt DESC
+								  ) b
+					  ) a
+				WHERE a.num between #{start} and #{end}
+			</when>
+			<when test="searchTitle=='날짜'">	
+				SELECT  a.c_id, a.u_id, a.c_dt, a.c_nm, a.c_img, a.c_mbr, a.c_inter, a.lon_x, a.lat_y, a.svc_nm, a.svc_link, a.st_date, a.ed_date, a.estimate, a.c_exp, a.c_st
+							,a.num
+				FROM (	SELECT b.c_id, b.u_id, b.c_dt, b.c_nm, b.c_img, b.c_mbr, b.c_inter, b.lon_x, b.lat_y, b.svc_nm, b.svc_link, b.st_date, b.ed_date, b.estimate, b.c_exp, b.c_st, (ROW_NUMBER() OVER()) AS num
+							FROM (
+								  SELECT * FROM ( SELECT * FROM campaign WHERE c_st = '2' AND st_date LIKE '%${searchCont}%') as c ORDER BY c_dt DESC
+								  ) b
+					  ) a
+				WHERE a.num between #{start} and #{end}
+			</when>
+		</choose>
+ 	</select>
+ 	
+ 	<select id="selectCampainApprovedCount" parameterType="EgovMap" resultType="integer">
+ 		<choose>
+ 			<when test="searchTitle=='캠페인 이름'">
+ 				SELECT count(*) From campaign WHERE c_st = '2' AND c_nm LIKE '%${searchCont}%'
+ 			</when>
+ 			<when test="searchTitle=='등록자'">
+ 				SELECT count(*) FROM campaign WHERE c_st = '2' AND u_id LIKE '%${searchCont}%'
+ 			</when>
+ 		 	<when test="searchTitle=='날짜'">
+ 				SELECT count(*) FROM campaign WHERE c_st = '2' AND st_date LIKE '%${searchCont}%'
+ 			</when>
+ 			 <otherwise>
+ 				SELECT count(*) FROM campaign WHERE c_st = '1' AND c_nm LIKE '%${searchCont}%'
+ 			</otherwise>
+ 		</choose>
+ 		
+ 	</select>
+	
+	
+	<!-- 캠페인 거절목록 -->
+	<select id="selectCampainRefused" parameterType="EgovMap" resultType="EgovMap">
+		<choose>
+			<when test="searchTitle=='캠페인 이름'">
+				SELECT  a.c_id, a.u_id, a.c_dt, a.c_nm, a.c_img, a.c_mbr, a.c_inter, a.lon_x, a.lat_y, a.svc_nm, a.svc_link, a.st_date, a.ed_date, a.estimate, a.c_exp, a.c_st
+							,a.num
+				FROM (	SELECT b.c_id, b.u_id, b.c_dt, b.c_nm, b.c_img, b.c_mbr, b.c_inter, b.lon_x, b.lat_y, b.svc_nm, b.svc_link, b.st_date, b.ed_date, b.estimate, b.c_exp, b.c_st, (ROW_NUMBER() OVER()) AS num
+							FROM (
+								  SELECT * FROM ( SELECT * FROM campaign WHERE c_st = '0' AND c_nm LIKE '%${searchCont}%') as c ORDER BY c_dt DESC
+								  ) b
+					  ) a
+				WHERE a.num between #{start} and #{end}			
+			</when>
+			<when test="searchTitle=='등록자'">
+				SELECT  a.c_id, a.u_id, a.c_dt, a.c_nm, a.c_img, a.c_mbr, a.c_inter, a.lon_x, a.lat_y, a.svc_nm, a.svc_link, a.st_date, a.ed_date, a.estimate, a.c_exp, a.c_st
+							,a.num
+				FROM (	SELECT b.c_id, b.u_id, b.c_dt, b.c_nm, b.c_img, b.c_mbr, b.c_inter, b.lon_x, b.lat_y, b.svc_nm, b.svc_link, b.st_date, b.ed_date, b.estimate, b.c_exp, b.c_st, (ROW_NUMBER() OVER()) AS num
+							FROM (
+								  SELECT * FROM ( SELECT * FROM campaign WHERE c_st = '0' AND u_id LIKE '%${searchCont}%') as c ORDER BY c_dt DESC
+								  ) b
+					  ) a
+				WHERE a.num between #{start} and #{end}		
+			</when>
+			<when test="searchTitle=='날짜'">
+				SELECT  a.c_id, a.u_id, a.c_dt, a.c_nm, a.c_img, a.c_mbr, a.c_inter, a.lon_x, a.lat_y, a.svc_nm, a.svc_link, a.st_date, a.ed_date, a.estimate, a.c_exp, a.c_st
+							,a.num
+				FROM (	SELECT b.c_id, b.u_id, b.c_dt, b.c_nm, b.c_img, b.c_mbr, b.c_inter, b.lon_x, b.lat_y, b.svc_nm, b.svc_link, b.st_date, b.ed_date, b.estimate, b.c_exp, b.c_st, (ROW_NUMBER() OVER()) AS num
+							FROM (
+								  SELECT * FROM ( SELECT * FROM campaign WHERE c_st = '0' AND st_date LIKE '%${searchCont}%') as c ORDER BY c_dt DESC
+								  ) b
+					  ) a
+				WHERE a.num between #{start} and #{end}		
+			</when>
+		</choose>
+ 	</select>
+ 	
+ 	<select id="selectCampainRefusedCount" parameterType="EgovMap" resultType="integer">
+ 		SELECT count(*) From campaign WHERE c_st = '0'
+ 	</select>
+
+	<!-- 진행중인 캠페인 -->
+	<select id="selectCampainProgressed" parameterType="EgovMap" resultType="EgovMap">
+		<choose>
+			<when test="searchTitle=='캠페인 이름'">
+				SELECT  a.c_id, a.u_id, a.c_dt, a.c_nm, a.c_img, a.c_mbr, a.c_inter, a.lon_x, a.lat_y, a.svc_nm, a.svc_link, a.st_date, a.ed_date, a.estimate, a.c_exp, a.c_st
+							,a.num
+				FROM (	SELECT b.c_id, b.u_id, b.c_dt, b.c_nm, b.c_img, b.c_mbr, b.c_inter, b.lon_x, b.lat_y, b.svc_nm, b.svc_link, b.st_date, b.ed_date, b.estimate, b.c_exp, b.c_st, (ROW_NUMBER() OVER()) AS num
+							FROM (
+								  SELECT * FROM ( SELECT * FROM campaign WHERE c_st = '3' AND c_nm LIKE '%${searchCont}%') as c ORDER BY c_dt DESC
+								  ) b
+					  ) a
+				WHERE a.num between #{start} and #{end}
+			</when>
+			<when test="searchTitle=='등록자'">
+				SELECT  a.c_id, a.u_id, a.c_dt, a.c_nm, a.c_img, a.c_mbr, a.c_inter, a.lon_x, a.lat_y, a.svc_nm, a.svc_link, a.st_date, a.ed_date, a.estimate, a.c_exp, a.c_st
+							,a.num
+				FROM (	SELECT b.c_id, b.u_id, b.c_dt, b.c_nm, b.c_img, b.c_mbr, b.c_inter, b.lon_x, b.lat_y, b.svc_nm, b.svc_link, b.st_date, b.ed_date, b.estimate, b.c_exp, b.c_st, (ROW_NUMBER() OVER()) AS num
+							FROM (
+								  SELECT * FROM ( SELECT * FROM campaign WHERE c_st = '3' AND u_id LIKE '%${searchCont}%') as c ORDER BY c_dt DESC
+								  ) b
+					  ) a
+				WHERE a.num between #{start} and #{end}
+			</when>
+			<when test="searchTitle=='날짜'">
+				SELECT  a.c_id, a.u_id, a.c_dt, a.c_nm, a.c_img, a.c_mbr, a.c_inter, a.lon_x, a.lat_y, a.svc_nm, a.svc_link, a.st_date, a.ed_date, a.estimate, a.c_exp, a.c_st
+							,a.num
+				FROM (	SELECT b.c_id, b.u_id, b.c_dt, b.c_nm, b.c_img, b.c_mbr, b.c_inter, b.lon_x, b.lat_y, b.svc_nm, b.svc_link, b.st_date, b.ed_date, b.estimate, b.c_exp, b.c_st, (ROW_NUMBER() OVER()) AS num
+							FROM (
+								  SELECT * FROM ( SELECT * FROM campaign WHERE c_st = '3' AND st_date LIKE '%${searchCont}%') as c ORDER BY c_dt DESC
+								  ) b
+					  ) a
+				WHERE a.num between #{start} and #{end}
+			</when>
+		
+		</choose>
+
+ 	</select>
+ 	
+ 	<select id="selectCampainProgressedCount" parameterType="EgovMap" resultType="integer">
+ 		<choose>
+ 			<when test="searchTitle=='캠페인 이름'">
+ 				SELECT count(*) From campaign WHERE c_st = '3' AND c_nm LIKE '%${searchCont}%'
+ 			</when>
+ 			<when test="searchTitle=='등록자'">
+ 				SELECT count(*) From campaign WHERE c_st = '3' AND u_id LIKE '%${searchCont}%'
+ 			</when>
+ 			<when test="searchTitle=='날짜'">
+ 				SELECT count(*) From campaign WHERE c_st = '3' AND st_date LIKE '%${searchCont}%'
+ 			</when>
+ 			<otherwise>
+ 				SELECT count(*) From campaign WHERE c_st = '3' AND c_nm LIKE '%${searchCont}%'
+ 			</otherwise>
+ 		</choose>
+ 		
+ 	</select>
+
+	<!-- 캠페인 삭제 -->
+	<delete id="deleteCampaign" parameterType="EgovMap">
+		DELETE from campaign
+		WHERE c_id = ${cId}
+	</delete>
+	
+	<!-- 사용자 목록 (미인증) -->
+	<select id="selectMemberCount" parameterType="EgovMap" resultType="integer">
+ 		SELECT COUNT(*) FROM member_info WHERE u_auth = 'B' AND u_state = '1';
+ 	</select>
+ 	
+	<select id="selectMember" parameterType="EgovMap" resultType="EgovMap">
+ 		SELECT  a.id, a.u_id, a.u_nm, a.u_hp, a.c_nm, a.c_ctgr_no, a.id_gen_agr, a.c_dt, a.l_m_dt, a.u_pw, a.u_auth, a.u_rw_pw, a.u_crpt, a.lon_x, a.lat_y, a.u_balance, a.u_addr
+		FROM (	SELECT b.id, b.u_id, b.u_nm, b.u_hp, b.c_nm, b.c_ctgr_no, b.id_gen_agr, b.c_dt, b.l_m_dt, b.u_pw, b.u_auth, b.u_rw_pw, b.u_crpt, b.lon_x, b.lat_y, b.u_balance, b.u_addr, (ROW_NUMBER() OVER()) AS num
+					FROM (
+						  SELECT * FROM ( SELECT * FROM member_info WHERE u_auth = 'B' AND u_state = '1') as c ORDER BY c_dt DESC
+						  ) b
+			  ) a
+		WHERE a.num between #{start} and #{end}
+ 	</select>
+	
+	<!-- 사용자 목록 (인증) -->
+	<select id="selectAuthMemberCount" parameterType="EgovMap" resultType="integer">
+ 		SELECT COUNT(*) FROM member_info WHERE u_auth = 'A';
+ 	</select>
+ 	
+	<select id="selectAuthMember" parameterType="EgovMap" resultType="EgovMap">
+ 		SELECT  a.id, a.u_id, a.u_nm, a.u_hp, a.c_nm, a.c_ctgr_no, a.id_gen_agr, a.c_dt, a.l_m_dt, a.u_pw, a.u_auth, a.u_rw_pw, a.u_crpt, a.lon_x, a.lat_y, a.u_balance, a.u_addr
+		FROM (	SELECT b.id, b.u_id, b.u_nm, b.u_hp, b.c_nm, b.c_ctgr_no, b.id_gen_agr, b.c_dt, b.l_m_dt, b.u_pw, b.u_auth, b.u_rw_pw, b.u_crpt, b.lon_x, b.lat_y, b.u_balance, b.u_addr, (ROW_NUMBER() OVER()) AS num
+					FROM (
+						  SELECT * FROM ( SELECT * FROM member_info WHERE u_auth = 'A') as c ORDER BY c_dt DESC
+						  ) b
+			  ) a
+		WHERE a.num between #{start} and #{end}
+ 	</select>
+ 	
+ 	<!-- 유저정보 표출 -->
+ 	<!-- 인증 신청한 사용자 -->
+ 	<select id="selectApplyMemberBoard" parameterType="EgovMap" resultType="EgovMap">
+		SELECT * FROM (
+		   				SELECT * FROM mentor_apply WHERE id =${id}
+					   		
+					   ) a RIGHT JOIN (SELECT * FROM member_info WHERE id=${id} AND u_state = '1') b
+		ON a.id = b.id
+	</select>
+	<!-- 카테고리 목록 -->
+	<select id="selectApplyMemberCategory" parameterType="EgovMap" resultType="EgovMap">
+		SELECT * from mentor_category
+		WHERE id = ${id}
+	</select>
+	<!-- 파일목록 -->
+	<select id="selectApplyMemberFile" parameterType="EgovMap" resultType="EgovMap">
+		SELECT * FROM mentor_file
+		WHERE id = ${id}
+	</select>
+	
+ 	<!-- 권한 사용자 -->
+ 	<select id="selectMemberBoard" parameterType="EgovMap" resultType="EgovMap">
+		SELECT * FROM member_info
+		WHERE id = ${id}
+	</select>
+	
+	<!-- 권한 A로 변경 -->
+	<update id="updateApproveMember" parameterType="EgovMap" >
+		UPDATE member_info
+		SET u_auth = 'A', u_state = '2' 
+		WHERE id = ${mId}
+	</update>
+	<delete id="deleteMentorApply" parameterType="EgovMap" >
+		DELETE FROM mentor_apply
+		WHERE id = ${mId}
+	</delete>
+	<delete id="deleteMentorApplyCategory" parameterType="EgovMap" >
+		DELETE FROM mentor_category
+		WHERE id = ${mId}
+	</delete>
+	<delete id="deleteMentorApplyFile" parameterType="EgovMap" >
+		DELETE FROM mentor_file
+		WHERE id = ${mId}
+	</delete>
+	
+	<!-- 권한 B로 변경 -->
+	<update id="updateApproveNormalMember" parameterType="EgovMap" >
+		UPDATE member_info
+		SET u_auth = 'B', u_state = '0' 
+		WHERE id = ${mId}
+	
+	</update>
+	
+	<!-- 알람목록 관리자 페이지에서-->
+	<select id="selectAlarmCount" parameterType="EgovMap" resultType="integer">
+		<choose>
+			<when test="email !=null and email !=''">
+				SELECT num FROM (
+					SELECT inqure_id, email, title,  contents, write_date, sender, status, (ROW_NUMBER() OVER()) AS num,
+					CASE 
+					WHEN u_id = 'proker@yonsei.ac.kr' THEN 'admin'
+					ELSE u_id
+					END AS u_id
+					FROM
+					(
+						SELECT inqure_id, b.u_id, email, title, contents, write_date, sender, status FROM inquire a left join member_info b on a.sender = b.id
+						WHERE (email = 'admin' and sender = ${sender}) or (sender = 23 and email = #{email})
+						order by write_date asc
+					) C
+				) A 
+				where status='1'
+				limit 1
+			</when>
+			<otherwise>
+				SELECT num FROM (
+					SELECT inqure_id, email, title,  contents, write_date, sender, status, (ROW_NUMBER() OVER()) AS num,
+					CASE 
+					WHEN u_id = 'proker@yonsei.ac.kr' THEN 'admin'
+					ELSE u_id
+					END AS u_id
+					FROM
+					(
+						SELECT inqure_id, b.u_id, email, title, contents, write_date, sender, status FROM inquire a left join member_info b on a.sender = b.id
+						WHERE email = 'admin' or sender = 23 
+						order by write_date asc
+					) C
+				) A 
+				where status='1'
+				limit 1
+			</otherwise>
+		</choose>
+
+	</select>
+	
+	
+	<select id ="selectAlarm" parameterType="EgovMap" resultType="EgovMap">
+		<choose>
+			<when test="email !=null and email !=''">
+				SELECT * FROM (
+					SELECT inqure_id, email, title,  contents, write_date, sender, status, (ROW_NUMBER() OVER()) AS num,
+					CASE 
+					WHEN u_id = 'proker@yonsei.ac.kr' THEN 'admin'
+					ELSE u_id
+					END AS u_id
+					FROM
+					(
+						SELECT inqure_id, b.u_id, email, title, contents, write_date, sender, status FROM inquire a left join member_info b on a.sender = b.id
+						WHERE (email = 'admin' and sender = ${sender}) or (sender = 23 and email = #{email})
+						order by write_date asc
+					) C
+				) A 
+				WHERE num between ${min} and ${max}
+				
+			</when>
+			<otherwise>
+				SELECT * FROM (
+					SELECT inqure_id, email, title,  contents, write_date, sender, status, (ROW_NUMBER() OVER()) AS num,
+					CASE 
+					WHEN u_id = 'proker@yonsei.ac.kr' THEN 'admin'
+					ELSE u_id
+					END AS u_id
+					FROM
+					(
+						SELECT inqure_id, b.u_id, email, title, contents, write_date, sender, status FROM inquire a left join member_info b on a.sender = b.id
+						WHERE email = 'admin' or sender = 23 
+						order by write_date asc
+					) C
+				) A 
+				WHERE num between ${min} and ${max}
+			
+			</otherwise>
+		</choose>
+
+		
+	</select>
+	
+	<!-- 관리자가 알람답변시 -->
+	<insert id="insertAlarmSubmit" parameterType="EgovMap">
+		INSERT INTO inquire (inqure_id, email, title, contents, sender, status, link_id)
+		VALUES (NEXTVAL('inqure_id_seq'), #{email}, #{title}, #{context}, 23, '3', ${id})
+	</insert>
+	<update id="updateAlarmSubmit" parameterType="EgovMap">
+		UPDATE inquire
+		SET status = '2' , link_id = CURRVAL('inqure_id_seq')
+		WHERE inqure_id = ${id}
+	</update>
+	
+	
+	<!-- 캠페인 변경알람들 -->
+	<insert id="insertAlarmAll" parameterType="EgovMap">
+		INSERT INTO inquire (inqure_id, email, title, contents, sender, status, link_id)
+		VALUES (NEXTVAL('inqure_id_seq'), #{email}, #{title}, #{context}, 23, '3', null)
+	</insert>
+	
+	<select id="selectRecentMessage" parameterType="EgovMap" resultType="EgovMap">
+		SELECT sender, case when email = 'admin' then u_id else email end as email, u_id, u_nm, title, contents, write_date, status, b.id 
+		FROM inquire a left join member_info b
+		ON case 
+			WHEN email = 'admin' then a.sender = b.id
+			WHEN email != 'admin' then a.email = b.u_id
+		end
+	    WHERE (id, inqure_id ,write_date) 
+	    in (
+	    	SELECT id, max(inqure_id) as inqure_id ,max(write_date) as write_date
+	        FROM inquire a left join member_info b
+			ON case 
+			WHEN email = 'admin' then a.sender = b.id
+			WHEN email != 'admin' then a.email = b.u_id
+			end
+	        group by id
+	       )
+	    order by write_date desc;
+	</select>
+	
+</mapper>
