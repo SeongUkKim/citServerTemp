@@ -6,7 +6,7 @@
 ## ⚙️ 개발 환경
 Java : JDK 1.8+
 
-Tomcat : 8.0+
+Tomcat : 8.5+
 
 Framework : spring + egovFramework
 
