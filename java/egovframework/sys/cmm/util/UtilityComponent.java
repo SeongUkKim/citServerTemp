@@ -126,7 +126,7 @@ public class UtilityComponent {
 	public String getRealDir() {
 		String realDir = null;
         if(isWindows()) {
-        	realDir = "C:/datarget/data";
+        	realDir = "C:/upload/data";
         }else {
         	realDir = "/data";
         }
