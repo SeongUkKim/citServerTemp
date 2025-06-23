@@ -153,25 +153,25 @@ public class MemberController {
 		int result = this.memberService.pwchkConfirm(params);
 		boolean mailSend = false;
 		if (result == 1) {
-			String title = "JW CRM 비밀번호 재설정";
+			String title = "[시스템명] 비밀번호 재설정";
 			String body = "<a style=\"display: inline-block;\" href=\""
-					+ "http://118.67.133.195:8080" + "/index\">"
-					+ "<div style=\"background-image:url('" + "http://118.67.133.195:8080"
+					+ "myURL" + "/index\">"
+					+ "<div style=\"background-image:url('" + "myURL"
 					+ "/resources/images/datarget_logo.svg'); background-size:250px 40px; width:250px; height:40px;\"></div></a>\r\n"
-					+ "<p>안녕하세요.</p>\r\n" + "<p>조금 전 누군가가 회원님의 JW CRM 비밀번호 변경을 요청하였습니다.<br>\r\n"
+					+ "<p>안녕하세요.</p>\r\n" + "<p>조금 전 누군가가 회원님의 시스템명 비밀번호 변경을 요청하였습니다.<br>\r\n"
 					+ "회원님이 요청하신 경우 여기에서 비밀번호를 새로 설정할 수 있습니다.</p>\r\n" + "<h3><a href='"
-					+ "http://118.67.133.195:8080" + "/member/rewrite/password.do?seq=" + userId
+					+ "myURL" + "/member/rewrite/password.do?seq=" + userId
 					+ "' style=\"display: inline-block; width: 200px; text-align: center; padding: 10px; text-decoration: none; background-color: #007bff; color: #FFFFFF;\">비밀번호 재설정</a></h3>\r\n"
 					+ "<p>비밀번호를 변경하고 싶지 않거나<br>\r\n" + "본인이 요청한 것이 아닌 경우, 본 메일을 통해 비밀번호를 재설정하지 않아도 무방합니다.</p>\r\n"
 					+ "<p>계정을 안전하게 보호하려면 본 이메일을 누구에게도 전달하지 마세요.<br>\r\n"
-					+ "더 궁금하신 사안이 있으시다면 <a href=\"mailto:td1118@yonsei.ac.kr\">td1118@yonsei.ac.kr</a> 로 메일을 보내주세요.\r\n"
+					+ "더 궁금하신 사안이 있으시다면 <a href=\"mailto:myMail\">myMail</a> 로 메일을 보내주세요.\r\n"
 					+ "<br><br>\r\n" + "감사합니다.\r\n" + "</p>";
 
 			final MimeMessagePreparator preparator = new MimeMessagePreparator() {
 				@Override
 				public void prepare(MimeMessage mimeMessage) throws Exception {
 					final MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
-					helper.setFrom("JW CRM <td1118@yonsei.ac.kr>");
+					helper.setFrom("시스템명 <myMail>");
 					helper.setTo(new InternetAddress(userEmail));
 					helper.setSubject(title);
 					helper.setText(body, true);
