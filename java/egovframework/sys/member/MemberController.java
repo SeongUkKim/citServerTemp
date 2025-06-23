@@ -157,7 +157,7 @@ public class MemberController {
 			String body = "<a style=\"display: inline-block;\" href=\""
 					+ "myURL" + "/index\">"
 					+ "<div style=\"background-image:url('" + "myURL"
-					+ "/resources/images/datarget_logo.svg'); background-size:250px 40px; width:250px; height:40px;\"></div></a>\r\n"
+					+ "/resources/images/logo.svg'); background-size:250px 40px; width:250px; height:40px;\"></div></a>\r\n"
 					+ "<p>안녕하세요.</p>\r\n" + "<p>조금 전 누군가가 회원님의 시스템명 비밀번호 변경을 요청하였습니다.<br>\r\n"
 					+ "회원님이 요청하신 경우 여기에서 비밀번호를 새로 설정할 수 있습니다.</p>\r\n" + "<h3><a href='"
 					+ "myURL" + "/member/rewrite/password.do?seq=" + userId
